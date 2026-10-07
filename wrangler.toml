@@ -1,0 +1,13 @@
+name = "financeiro"
+main = "./src/index.js"
+compatibility_date = "2026-10-07"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/state"]
+
+# O banco D1 será ligado pelo painel do Cloudflare.
+# Nome da variável do binding: FINANCEIO_DB
+# Banco: financeiro

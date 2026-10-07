@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tarefas Diárias — Financeiro</title>
+<style>
+:root{
+  --bg:#f6f8f4; --card:#fff; --ink:#26332d; --muted:#738078;
+  --line:#e4e9e3; --soft:#eef3ed; --accent:#1e765d; --accent2:#dfece5;
+  --danger:#a54d4d; --shadow:0 8px 28px rgba(31,54,42,.07);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:#fff;border-right:1px solid var(--line);padding:24px 18px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:11px;align-items:center;padding:4px 8px 24px}
+.logo{width:38px;height:38px;border-radius:11px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800}
+.brand strong{display:block;font-size:15px}.brand span{font-size:12px;color:var(--muted)}
+.nav{display:grid;gap:7px}
+.people-title{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;margin:0 8px 7px}
+.people-nav{display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:18px}
+.people-nav button{border:1px solid var(--line);background:#fff;text-align:left;padding:10px 12px;border-radius:10px;color:#5d6b63;font-weight:750}
+.people-nav button.active,.people-nav button:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.person-badge{font-size:11px;font-weight:800;color:var(--accent);background:var(--accent2);padding:5px 8px;border-radius:20px}
+.nav button{border:0;background:transparent;text-align:left;padding:12px 13px;border-radius:10px;color:#5d6b63;font-weight:650}
+.nav button.active,.nav button:hover{background:var(--soft);color:var(--accent)}
+.sidebar-note{margin-top:28px;padding:14px;background:var(--soft);border-radius:12px;font-size:12px;color:#607067;line-height:1.5}
+main{flex:1;min-width:0}
+.topbar{background:#fff;border-bottom:1px solid var(--line);padding:24px 34px;display:flex;justify-content:space-between;gap:18px;align-items:center}
+.title h1{margin:0;font-size:23px}.title p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.monthbox{display:flex;align-items:center;gap:8px}.monthbox select{border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:#fff;color:var(--ink);font-weight:650}
+.content{padding:28px 34px 48px;max-width:1450px}
+.page{display:none}.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.stat .k{font-size:12px;color:var(--muted)}.stat .v{font-size:25px;font-weight:800;margin-top:4px}.stat .s{font-size:11px;color:var(--muted);margin-top:3px}
+.card{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+.cardhead{padding:17px 19px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cardhead h2{margin:0;font-size:15px}.cardhead p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+.section{padding:18px 19px}
+.task-grid{display:grid;gap:10px}
+.task{border:1px solid var(--line);border-radius:11px;padding:12px 13px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;background:#fff}
+.task.done{background:#f7faf7}.check{width:20px;height:20px;border:2px solid #b7c2ba;border-radius:6px;display:grid;place-items:center;flex:none}
+.task.done .check{background:var(--accent);border-color:var(--accent);color:#fff}
+.task.done .check:after{content:"✓";font-size:13px;font-weight:900}
+.taskname{font-weight:700;font-size:13px}.meta{font-size:11px;color:var(--muted);margin-top:3px}
+.pill{font-size:10px;font-weight:750;padding:5px 8px;border-radius:20px;background:var(--soft);color:var(--accent)}
+.progress{height:8px;background:#edf1ed;border-radius:20px;overflow:hidden;margin-top:10px}.progress>div{height:100%;background:var(--accent);border-radius:20px;transition:.2s}
+.two{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.dow{font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:800;text-align:center;padding:5px}
+.day{min-height:72px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px;position:relative}
+.day.muted{background:#fafbfa;color:#c1c8c3}.daynum{font-size:11px;font-weight:800}.dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:8px}.dot{width:6px;height:6px;border-radius:50%;background:#c4ccc6}.dot.done{background:var(--accent)}
+.day.today{outline:2px solid var(--accent2)}
+.list{display:grid;gap:9px}.row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 0;gap:12px}.row:last-child{border-bottom:0}
+.choice{display:flex;gap:5px}.choice button,.smallbtn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 9px;font-size:11px}.weekday-picker{display:flex;gap:5px;margin-top:9px}.weekday-picker button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 8px;font-size:10px;font-weight:750;color:#59665e}.weekday-picker button.selected{background:var(--accent);border-color:var(--accent);color:#fff}.adm-grid{display:grid;grid-template-columns:repeat(4,minmax(90px,1fr));gap:7px;margin-top:9px}.adm-option{border:1px solid var(--line);border-radius:8px;padding:7px;background:#fafcf9}.adm-option strong{display:block;font-size:10px;margin-bottom:5px;color:#56635b}.custom-task,.juridico-task{align-items:start}.choice button.selected{background:var(--accent);border-color:var(--accent);color:#fff}
+textarea{width:100%;min-height:60px;border:1px solid var(--line);border-radius:9px;padding:9px;resize:vertical;outline:none}.dateinput{border:1px solid var(--line);border-radius:7px;padding:6px;font-size:11px}
+.invoice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.invoice-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}.invoice-toolbar .mini-stat{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fafcf9;font-size:11px;color:var(--muted)}.invoice-toolbar .mini-stat b{color:var(--ink)}.invoice h3{display:flex;align-items:center;justify-content:space-between;gap:8px}.due-badge{font-size:10px;font-weight:750;padding:5px 8px;border-radius:999px;background:#eef7f2;color:var(--accent);white-space:nowrap}.due-badge.neutral{background:#f3f5f3;color:var(--muted)}
+.invoice{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}.invoice h3{margin:0 0 10px;font-size:13px}.field{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0;font-size:12px}.field label{color:#56635b}.field.stack{display:block}.field.stack label{display:block;margin-bottom:5px}
+.actions{display:flex;gap:8px;align-items:center}.primary{border:0;background:var(--accent);color:#fff;border-radius:9px;padding:9px 13px;font-weight:750}.ghost{border:1px solid var(--line);background:#fff;color:#536159;border-radius:9px;padding:9px 13px;font-weight:700}
+.empty{padding:25px;text-align:center;color:var(--muted);font-size:13px}
+.toast{position:fixed;right:22px;bottom:22px;background:#26332d;color:#fff;padding:11px 14px;border-radius:9px;box-shadow:var(--shadow);font-size:12px;display:none;z-index:5}
+.modal{position:fixed;inset:0;background:rgba(22,34,28,.35);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.show{display:flex}
+.modalbox{background:#fff;border-radius:15px;width:min(540px,100%);padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.18)}.modalbox h2{margin:0 0 7px;font-size:17px}.modalbox p{font-size:12px;color:var(--muted)}
+.done-history{background:#f8fbf8;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}.history-head{padding:15px 19px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}.history-head h2{margin:0;font-size:15px}.history-head p{margin:4px 0 0;font-size:12px;color:var(--muted)}.history-list{padding:8px 19px}.history-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.history-item:last-child{border-bottom:0}.history-main{display:flex;align-items:center;gap:10px;min-width:0}.history-check{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900;flex:none}.history-name{font-size:12px;font-weight:700}.history-meta{font-size:10px;color:var(--muted);margin-top:2px}.history-reset{border:1px solid var(--line);background:#fff;color:#68756d;border-radius:7px;padding:5px 8px;font-size:10px}.filterbar{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}.filterbtn{border:1px solid var(--line);background:#fff;color:#5d6b63;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:750}.filterbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}.alert{background:#fff3f3;border:1px solid #efd1d1;color:#8a4a4a;border-radius:10px;padding:11px;font-size:12px;margin-bottom:12px}.today-card{border-color:#c9dfd4}.notice{background:#fff8e8;border:1px solid #f0dfb1;color:#78622e;border-radius:10px;padding:11px;font-size:12px;margin-bottom:15px}
+.team-summary{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;cursor:pointer}.team-summary strong{font-size:13px}.team-details{padding:12px 0 0;border-top:1px solid var(--line)}.team-cancel{border-color:#efd1d1;color:#8a4a4a}.invoice-due{margin-top:10px;padding:9px;border:1px dashed var(--line);border-radius:9px;background:#fafcf9}.due-ok{color:var(--accent);font-weight:750}.due-late{color:var(--danger);font-weight:750}.due-pending{color:#9a6b19;font-weight:750}.copart-hidden{padding:9px;border:1px dashed var(--line);border-radius:9px;background:#fafcf9;font-size:11px;color:var(--muted)}
+@media(max-width:1000px){.sidebar{width:210px}.stats{grid-template-columns:repeat(2,1fr)}.two,.invoice-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.app{display:block}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:12px}.nav{display:flex;overflow:auto}.sidebar-note{display:none}.topbar{padding:18px}.content{padding:18px}.stats{grid-template-columns:1fr 1fr}.task{grid-template-columns:auto 1fr}.task>.pill{grid-column:2;justify-self:start}.invoice-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">F</div><div><strong>Financeiro</strong><span>Controle de tarefas</span></div></div>
+    <div class="people-title">Pessoa</div>
+    <div class="people-nav">
+      <button class="active" data-person="Joice">Joice</button>
+      <button data-person="Andreina">Andreina</button>
+      <button data-person="Leonardo">Leonardo</button>
+    </div>
+    <div class="people-title">Área de trabalho</div>
+    <div class="nav">
+      <button class="active" data-page="daily">01 · Tarefas diárias</button>
+      <button data-page="invoices">02 · Faturas consolidadas</button>
+      <button data-page="history">03 · Histórico mensal</button>
+      <button data-page="team">04 · Acompanhamento da equipe</button>
+    </div>
+    <div class="sidebar-note"><b>Áreas individuais</b><br>Cada pessoa tem suas próprias tarefas, faturas e histórico.<div id="syncStatus" style="margin-top:10px;font-weight:750">☁️ Conectando...</div></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div class="title"><h1 id="pageTitle">Tarefas diárias — Financeiro</h1><p id="pageSub">Acompanhe as atividades e marque cada ocorrência concluída.</p><div id="clockNow" style="font-size:11px;color:var(--muted);margin-top:5px">Agora: --/--/---- · --:--</div></div><div class="person-badge" id="personBadge">Joice</div>
+      <div class="monthbox"><span style="font-size:12px;color:var(--muted)">Mês</span><select id="monthSelect"></select></div>
+    </header>
+
+    <div class="content">
+      <section id="daily" class="page active"></section>
+      <section id="invoices" class="page"></section>
+      <section id="history" class="page"></section>
+      <section id="team" class="page"></section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal" id="finishModal">
+  <div class="modalbox">
+    <h2>🎉 Mês concluído</h2>
+    <p>Todas as tarefas previstas deste mês foram concluídas. Ao confirmar, o próximo mês será iniciado com um novo conjunto de marcações, mantendo este mês no histórico.</p>
+    <div class="actions" style="justify-content:flex-end;margin-top:16px"><button class="ghost" onclick="closeModal()">Continuar</button><button class="primary" onclick="advanceMonth()">Iniciar próximo mês</button></div>
+  </div>
+</div>
+
+<script>
+const MONTHS=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DAYS=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const YEAR=new Date().getFullYear();
+const STORAGE="financeiro_tarefas_v3";
+const LEGACY_STORAGE="financeiro_tarefas_v2";
+const PEOPLE=["Joice","Andreina","Leonardo"];
+
+// =========================================================
+// CLOUDFLARE WORKER + D1 — sincronização em nuvem
+// O navegador conversa apenas com o Worker. O Worker acessa o banco D1.
+const WORKER_API="";
+let cloudReady=false;
+let cloudLoading=true;
+let cloudSaveQueue=Promise.resolve();
+let applyingRemote=false;
+let lastCloudUpdatedAt=null;
+let cloudPollTimer=null;
+
+function setSyncStatus(text,ok=false){
+  const el=document.getElementById("syncStatus");
+  if(!el) return;
+  el.textContent=(ok?"☁️ ":"⚠️ ")+text;
+  el.style.color=ok?"var(--accent)":"#9a6b19";
+}
+
+function saveLocalSnapshot(snapshot){
+  try{
+    localStorage.setItem(STORAGE,JSON.stringify(snapshot));
+    localStorage.setItem(STORAGE+"_selected",selectedMonth);
+    localStorage.setItem(STORAGE+"_person",currentPerson);
+  }catch(err){ console.warn("Não foi possível salvar no armazenamento local",err); }
+}
+
+async function fetchCloudState(){
+  const response=await fetch(WORKER_API+"/state?t="+Date.now(),{
+    method:"GET",
+    headers:{"Accept":"application/json"},
+    cache:"no-store"
+  });
+  if(!response.ok) throw new Error(`HTTP ${response.status}`);
+  const payload=await response.json();
+  if(payload?.data && typeof payload.data==="object"){
+    return {data:payload.data,updated_at:payload.updated_at||null};
+  }
+  return {data:null,updated_at:payload?.updated_at||null};
+}
+
+function applyRemoteState(remote,updatedAt){
+  if(!remote || typeof remote!=="object") return;
+  applyingRemote=true;
+  try{
+    db=remote;
+    for(const person of PEOPLE) db[person]??={};
+    saveLocalSnapshot(db);
+    lastCloudUpdatedAt=updatedAt||lastCloudUpdatedAt;
+    render();
+    document.querySelectorAll(".people-nav button").forEach(b=>b.classList.toggle("active",b.dataset.person===currentPerson));
+    setSyncStatus("sincronizado",true);
+  }finally{
+    applyingRemote=false;
+  }
+}
+
+function queueCloudSave(){
+  if(!cloudReady || applyingRemote) return cloudSaveQueue;
+  const snapshot=JSON.parse(JSON.stringify(db));
+  cloudSaveQueue=cloudSaveQueue.then(async()=>{
+    const response=await fetch(WORKER_API+"/state",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify(snapshot)
+    });
+    if(!response.ok){
+      let detail=`HTTP ${response.status}`;
+      try{ const err=await response.json(); detail=err?.error||detail; }catch(_e){}
+      throw new Error(detail);
+    }
+    const result=await response.json();
+    lastCloudUpdatedAt=result?.updated_at||new Date().toISOString();
+    saveLocalSnapshot(snapshot);
+    setSyncStatus("sincronizado",true);
+  }).catch(err=>{
+    console.error("Cloudflare Worker save error",err);
+    setSyncStatus("erro ao sincronizar",false);
+  });
+  return cloudSaveQueue;
+}
+
+async function pollCloudState(){
+  if(!cloudReady || applyingRemote) return;
+  try{
+    const remote=await fetchCloudState();
+    if(remote.data && remote.updated_at && remote.updated_at!==lastCloudUpdatedAt){
+      // Se o servidor tem uma atualização diferente da última enviada/recebida,
+      // aplica-a neste navegador para manter os computadores sincronizados.
+      applyRemoteState(remote.data,remote.updated_at);
+    }
+  }catch(err){
+    console.warn("Cloudflare Worker sync check error",err);
+  }
+}
+
+function startCloudPolling(){
+  if(cloudPollTimer) clearInterval(cloudPollTimer);
+  cloudPollTimer=setInterval(pollCloudState,5000);
+}
+
+async function initCloudSync(){
+  setSyncStatus("conectando...",false);
+  try{
+    const remote=await fetchCloudState();
+    if(remote.data && typeof remote.data==="object"){
+      db=remote.data;
+      for(const person of PEOPLE) db[person]??={};
+      saveLocalSnapshot(db);
+      lastCloudUpdatedAt=remote.updated_at||null;
+      cloudReady=true;
+      setSyncStatus("sincronizado",true);
+      startCloudPolling();
+    }else{
+      // Primeira execução: envia para a nuvem o estado que já estava no navegador.
+      cloudReady=true;
+      await queueCloudSave();
+      startCloudPolling();
+      setSyncStatus("sincronizado",true);
+    }
+  }catch(err){
+    console.error("Cloudflare Worker connection error",err);
+    cloudReady=false;
+    const detail=err?.message||"verifique a conexão com o Worker";
+    setSyncStatus("modo local — "+detail.slice(0,70),false);
+  }finally{
+    cloudLoading=false;
+    render();
+  }
+}
+
+let rawDb=JSON.parse(localStorage.getItem(STORAGE)||'{}');
+// Migração de teste: se já existiam dados da versão anterior, eles entram na pasta da Joice.
+if(!PEOPLE.some(p=>rawDb[p])){
+  const legacy=JSON.parse(localStorage.getItem(LEGACY_STORAGE)||'{}');
+  const legacyMonths=Object.fromEntries(Object.entries(legacy).filter(([k])=>/^\d{4}-\d{2}$/.test(k)));
+  rawDb={Joice:legacyMonths};
+}
+let db=rawDb;
+for(const person of PEOPLE) db[person]??={};
+let currentPerson=localStorage.getItem(STORAGE+"_person") || "Joice";
+if(!PEOPLE.includes(currentPerson)) currentPerson="Joice";
+let selectedMonth=localStorage.getItem(STORAGE+"_selected") || `${YEAR}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+let currentPage="daily";
+let dailyFilter="pending";
+
+const invoicesJoice=[
+"ANGELI 7032 – 29","ANGELI 7033 – 09","ANGELI 7034 – 21","HOSPITALAR COMPAR – 5,15-25","HOSPITALAR JONVILLE – 15","HAPVIDA MH – 15","HAPVIDA MH – 25","ACP – 15","UNIMEDICA CARD – 15","UNIMEDICA – 15","GNDI SUL – 10","GNDI SUL – 15","GNDI SUL – 20","GNDI SUL – 25","GNDI SUL – 30","CLINIPAM – 25","HAPVIDA CCG – 30","UNIMED FOZ – 29","VINDI – 20"
+];
+const invoicesAndreina=[
+"KLINI – 1,11-21",
+"FÁTIMA SAÚDE – 10,15-25",
+"HUMANA MH – 10,15-25",
+"HUMANA ADESÃO RS – 10,15-25",
+"FÁTIMA COMPAR – 10,15-25",
+"FÁTIMA COMPAR ODONTO - 10",
+"FÁTIMA COMPAR ODONTO - 15",
+"FÁTIMA COMPAR ODONTO - 25",
+"SANTA RITA COMPAR – 10,15-25",
+"SANTA RITA COMPAR ODONTO - 10",
+"SANTA RITA COMPAR ODONTO - 15",
+"SANTA RITA COMPAR ODONTO - 25",
+"SEMPRE VIDA – 10,15-25",
+"SEMPRE VIDA ODONTO – 10",
+"SEMPRE VIDA ODONTO – 15",
+"SEMPRE VIDA ODONTO – 25",
+"ITAMED – 20",
+"NOSSA SAÚDE – 25",
+"PORTO SEGURO DENTAL – 30",
+"MJO – 3",
+"UNITFOUR – 12",
+"MKT – 15",
+"NEOENERGIA – 23",
+"V2 – 25",
+"V2 OMNI – 25"
+];
+const invoicesLeonardo=[
+"UNIMED GUARATINGUETÁ – 14",
+"UNIMED GUARATINGUETÁ – 20",
+"GARANTIA DE SAÚDE – 15",
+"DENTAL UNI – 15",
+"MEDSUL – 20",
+"MEDSUL – 30",
+"SAÚDE DO VALE – 25",
+"HAPVIDA CLASSE – 30",
+"HAPVIDA ODONTO - 30",
+"BRADESCO DENTAL – 30",
+"ODONTOGROUP – 30",
+"VIVIANE REIS – 7",
+"CORREIOS – 11",
+"CORREIOS – 21",
+"GIOVANA VELTRI – 15",
+"ANC – 20",
+"UNIPRO – 20",
+"ANCE – 20",
+"THAÍS IGNÁCIO – 20",
+"HAENISCH – 20",
+"ASSBRA – 26",
+"ASSCOMPE – 26",
+"ABEBPE – 26",
+"ACOMPE – 26"
+];
+function currentInvoices(){
+  if(currentPerson==="Andreina") return invoicesAndreina;
+  if(currentPerson==="Leonardo") return invoicesLeonardo;
+  return invoicesJoice;
+}
+
+function invoiceDueDay(i,x){
+  const direct=Number(x?.dueDay || (x?.dueDate?String(x.dueDate).slice(8,10):0));
+  if(direct) return direct;
+  const pd=personDb();
+  const months=Object.keys(pd).filter(k=>/^\d{4}-\d{2}$/.test(k)).sort().reverse();
+  for(const mk of months){
+    if(mk>selectedMonth) continue;
+    const prev=Number(pd[mk]?.invoices?.[i]?.dueDay || (pd[mk]?.invoices?.[i]?.dueDate?String(pd[mk].invoices[i].dueDate).slice(8,10):0));
+    if(prev) return prev;
+  }
+  return 0;
+}
+function invoiceDueDate(x,i){
+  if(!x && !i && i!==0) return "";
+  const {y,m}=ymParts(selectedMonth);
+  const day=invoiceDueDay(i,x);
+  if(!day) return "";
+  const last=new Date(y,m,0).getDate();
+  const d=Math.min(day,last);
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function dueLabel(date, provisionDate){
+  if(!date) return "";
+  // Regra de atraso do boleto: só consideramos atraso quando a
+  // data do provisionamento for DEPOIS do vencimento. Se for no
+  // mesmo dia ou antes, não é atraso.
+  if(provisionDate){
+    const due=new Date(`${date}T12:00:00`);
+    const prov=new Date(`${provisionDate}T12:00:00`);
+    const diffProv=Math.round((prov-due)/86400000);
+    if(diffProv>0) return `<span class="due-late">Provisionado ${diffProv} dia${diffProv===1?'':'s'} após o vencimento</span>`;
+    if(diffProv===0) return `<span class="due-ok">Provisionado no dia do vencimento</span>`;
+    const n=Math.abs(diffProv);
+    return `<span class="due-ok">Provisionado ${n} dia${n===1?'':'s'} antes do vencimento</span>`;
+  }
+  // Sem data de provisionamento, não chamamos de atraso.
+  // Apenas mostramos a situação do vencimento para orientar o usuário.
+  const now=localNowSP().date;
+  const a=new Date(`${date}T12:00:00`), b=new Date(`${now}T12:00:00`);
+  const diff=Math.round((a-b)/86400000);
+  if(diff>0) return `<span class="due-ok">Faltam ${diff} dia${diff===1?'':'s'} para vencer</span>`;
+  if(diff===0) return `<span class="due-ok">Vence hoje · aguardando provisionamento</span>`;
+  const n=Math.abs(diff);
+  return `<span class="due-pending">Vencimento passou há ${n} dia${n===1?'':'s'} · aguardando provisionamento</span>`;
+}
+function setInvDueDate(i,v){
+  const d=getData(selectedMonth); d.invoices[i]??={};
+  d.invoices[i].dueDate=v||"";
+  d.invoices[i].dueDay=v?Number(String(v).slice(8,10)):null;
+  save(); renderInvoices();
+}
+function setCopartNone(i,vig){
+  const d=getData(selectedMonth); d.invoices[i]??={};
+  if(vig){ d.invoices[i][`vig${vig}`]??={}; d.invoices[i][`vig${vig}`].status='nao_tem'; d.invoices[i][`vig${vig}`].date=''; }
+  else { d.invoices[i].copart='nao_tem'; d.invoices[i].copartDate=''; }
+  save(); renderInvoices();
+}
+function restoreCopart(i,vig){
+  const d=getData(selectedMonth); d.invoices[i]??={};
+  if(vig){ d.invoices[i][`vig${vig}`]??={}; d.invoices[i][`vig${vig}`].status='nao'; }
+  else { d.invoices[i].copart='nao'; }
+  save(); renderInvoices();
+}
+
+function key(y,m){return `${y}-${String(m).padStart(2,'0')}`}
+function ymParts(k){const [y,m]=k.split("-").map(Number);return {y,m}}
+function monthLabel(k){const {y,m}=ymParts(k);return `${MONTHS[m-1]} ${y}`}
+function nextWeekdayDate(y,m,day){
+  const d=new Date(y,m-1,day);
+  while(d.getDay()===0 || d.getDay()===6) d.setDate(d.getDate()+1);
+  return d;
+}
+function isHoliday(y,m,day){
+  const fixed=["01-01","04-21","05-01","09-07","10-12","11-02","11-15","11-20","12-25"];
+  return fixed.includes(`${String(m).padStart(2,"0")}-${String(day).padStart(2,"0")}`);
+}
+function personDb(){ db[currentPerson]??={}; return db[currentPerson]; }
+function getData(k){
+  const pd=personDb();
+  if(!pd[k]) pd[k]={tasks:{}, invoices:{}, createdAt:new Date().toISOString()};
+  if(!pd[k].invoices) pd[k].invoices={};
+  if(!pd[k].tasks) pd[k].tasks={};
+  return pd[k];
+}
+function save(){
+  localStorage.setItem(STORAGE,JSON.stringify(db));
+  localStorage.setItem(STORAGE+"_selected",selectedMonth);
+  localStorage.setItem(STORAGE+"_person",currentPerson);
+  queueCloudSave();
+}
+function showToast(t){const x=document.getElementById("toast");x.textContent=t;x.style.display="block";clearTimeout(showToast.t);showToast.t=setTimeout(()=>x.style.display="none",2200)}
+function monthDates(k){const {y,m}=ymParts(k), arr=[];const n=new Date(y,m,0).getDate();for(let d=1;d<=n;d++)arr.push(new Date(y,m-1,d));return arr}
+function occurrenceTasks(k){
+  const {y,m}=ymParts(k), dates=monthDates(k), list=[];
+  for(const d of dates){
+    const iso=`${y}-${String(m).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const wd=d.getDay();
+    if(wd===0 || wd===6) continue;
+
+    // LEONARDO: tarefas específicas deste teste.
+    if(currentPerson==="Leonardo"){
+      // Conciliação de pagamentos: dias úteis, exceto feriados nacionais fixos.
+      if(!isHoliday(y,m,d.getDate())) list.push({id:`conciliacao_pagamentos_${iso}`,date:iso,name:"Conciliação de pagamentos",time:"Diária",type:"Diária"});
+      list.push({id:`pix_${iso}_1810`,date:iso,name:"Registrar Pix",time:"18:10",type:"Diária"});
+      list.push({id:`remessa_bancaria_${iso}_1810`,date:iso,name:"Remessa Bancária",time:"18:10",type:"Diária"});
+      list.push({id:`remessa_pagamentos_${iso}_1810`,date:iso,name:"Remessa de pagamentos",time:"18:10",type:"Diária"});
+      if(wd===2) list.push({id:`cobranca_${iso}`,date:iso,name:"Cobrança de dependente",time:"Terça-feira",type:"Semanal",cobranca:true});
+      // Jurídico: somente segunda, quinta e sexta. O seletor interno continua Seg-Sex.
+      if([1,4,5].includes(wd)) list.push({id:`juridico_${iso}`,date:iso,name:"Pagamento e enviar comprovantes — Jurídico",time:DAYS[wd],type:"Segunda, quinta e sexta",juridico:true});
+
+      const targets=[
+        [27,"atualizar_tabela","Atualizar tabela de dependentes","Dia 27","normal"],
+        [10,"planilha","Enviar planilha contábil","Dia 10","adm"],
+        [22,"comprovante_operadoras","Baixar comprovante operadoras","Dia 22","normal"],
+        [1,"faturamento","Faturamento","Dia 01, 10 e 20","faturamento"],
+        [10,"faturamento","Faturamento","Dia 01, 10 e 20","faturamento"],
+        [20,"faturamento","Faturamento","Dia 01, 10 e 20","faturamento"]
+      ];
+      for(const [target,idBase,name,time,kind] of targets){
+        const adj=nextWeekdayDate(y,m,target);
+        if(adj.getDate()===d.getDate() && adj.getMonth()===d.getMonth()){
+          const common={id:`${idBase}_${target}_${iso}`,date:iso,name,time,type:"Mensal"};
+          if(kind==="adm") list.push({...common,planilhaAdm:true});
+          else if(kind==="faturamento") list.push({...common,faturamento:true});
+          else list.push(common);
+        }
+      }
+      continue;
+    }
+
+    // A área da Andreina tem somente as tarefas específicas do teste.
+    if(currentPerson==="Andreina") {
+      if(wd===5) list.push({id:`juridico_${iso}`,date:iso,name:"Pagamento e enviar comprovantes — Jurídico",time:"Sexta-feira",type:"Semanal",juridico:true});
+      if(wd===2) list.push({id:`cobranca_${iso}`,date:iso,name:"Cobrança de dependente",time:"Terça-feira",type:"Semanal",cobranca:true});
+      [1,10,20].includes(d.getDate()) && list.push({id:`faturamento_${iso}`,date:iso,name:"Faturamento",time:`Dia ${d.getDate()}`,type:"Mensal",faturamento:true});
+      const targets=[
+        [27, "atualizar_tabela", "Atualizar tabela de dependente", "Dia 27", "normal"],
+        [10, "planilha", "Enviar planilha contábil", "Dia 10", "adm"],
+        [2, "comprovante_diversos", "Baixar comprovante parc.diversos", "Dias 2, 12 e 22", "normal"],
+        [12, "comprovante_diversos", "Baixar comprovante parc.diversos", "Dias 2, 12 e 22", "normal"],
+        [22, "comprovante_diversos", "Baixar comprovante parc.diversos", "Dias 2, 12 e 22", "normal"]
+      ];
+      for(const [target,idBase,name,time,kind] of targets){
+        const adj=nextWeekdayDate(y,m,target);
+        if(adj.getDate()===d.getDate() && adj.getMonth()===d.getMonth()){
+          const suffix=String(target);
+          if(kind==="adm") list.push({id:`${idBase}_${iso}`,date:iso,name,time,type:"Mensal",planilhaAdm:true});
+          else list.push({id:`${idBase}_${suffix}_${iso}`,date:iso,name,time,type:"Mensal"});
+        }
+      }
+      continue;
+    }
+
+    // JOICE: configuração específica deste teste.
+    if(currentPerson==="Joice") {
+      if(!isHoliday(y,m,d.getDate())) list.push({id:`conciliacao_bancaria_${iso}_0820`,date:iso,name:"Conciliação bancária",time:"08:20",type:"Diária"});
+      list.push({id:`pix_verificar_${iso}_0830`,date:iso,name:"Verificar pagamento PIX",time:"08:30",type:"Diária"});
+      if(!isHoliday(y,m,d.getDate())) list.push({id:`resultado_financeiro_${iso}`,date:iso,name:"Resultado financeiro",time:"Diária",type:"Diária"});
+      if(!isHoliday(y,m,d.getDate())) list.push({id:`remessa_bancaria_${iso}_1130`,date:iso,name:"Remessa bancária",time:"11:30",type:"Diária"});
+      if(!isHoliday(y,m,d.getDate())) list.push({id:`remessa_bancaria_${iso}_1730`,date:iso,name:"Remessa bancária",time:"17:30",type:"Diária"});
+      if(wd===2) list.push({id:`cobranca_${iso}`,date:iso,name:"Cobrança de dependente",time:"Terça-feira",type:"Semanal",cobranca:true});
+      if([2,3].includes(wd)) list.push({id:`juridico_${iso}`,date:iso,name:"Pagamento e enviar comprovantes – Jurídico",time:DAYS[wd],type:"Terça e quarta",juridico:true});
+      const targets=[
+        [27,"atualizar_tabela","Atualizar tabela de dependente","Dia 27","normal"],
+        [10,"planilha","Enviar planilha contábil","Dia 10","adm"],
+        [2,"comprovante_operadoras","Baixar comprovante operadoras","Dias 02 e 12","normal"],
+        [12,"comprovante_operadoras","Baixar comprovante operadoras","Dias 02 e 12","normal"],
+        [1,"faturamento","Faturamento","Dia 01, 10 e 20","faturamento"],
+        [10,"faturamento","Faturamento","Dia 01, 10 e 20","faturamento"],
+        [20,"faturamento","Faturamento","Dia 01, 10 e 20","faturamento"]
+      ];
+      for(const [target,idBase,name,time,kind] of targets){
+        const adj=nextWeekdayDate(y,m,target);
+        if(adj.getDate()===d.getDate() && adj.getMonth()===d.getMonth()){
+          const common={id:`${idBase}_${target}_${iso}`,date:iso,name,time,type:"Mensal"};
+          if(kind==="adm") list.push({...common,planilhaAdm:true});
+          else if(kind==="faturamento") list.push({...common,faturamento:true});
+          else list.push(common);
+        }
+      }
+      continue;
+    }
+
+    // Demais pessoas mantêm a configuração geral do teste.
+    list.push({id:`conciliacao_${iso}_0820`,date:iso,name:"Conciliação bancária",time:"08:20",type:"Diária"});
+    list.push({id:`resultado_${iso}_0835`,date:iso,name:"Resultado financeiro",time:"08:35",type:"Diária"});
+    list.push({id:`resultado_${iso}_0900`,date:iso,name:"Resultado financeiro",time:"09:00",type:"Diária"});
+    list.push({id:`remessa_${iso}_1130`,date:iso,name:"Remessa bancária",time:"11:30",type:"Diária"});
+    list.push({id:`remessa_${iso}_1730`,date:iso,name:"Remessa bancária",time:"17:30",type:"Diária"});
+    list.push({id:`juridico_${iso}`,date:iso,name:"Pagamento e enviar comprovantes — Jurídico",time:DAYS[wd],type:"Segunda a sexta",juridico:true});
+    if(wd===2) list.push({id:`cobranca_${iso}`,date:iso,name:"Cobrança de dependente",time:"Terça-feira",type:"Semanal",cobranca:true});
+    if(d.getDate()===10) list.push({id:`planilha_${iso}`,date:iso,name:"Enviar planilha contábil / Classe",time:"Dia 10",type:"Mensal"});
+    [1,10,20].includes(d.getDate()) && list.push({id:`faturamento_${iso}`,date:iso,name:"Faturamento",time:`Dia ${d.getDate()}`,type:"Mensal",faturamento:true});
+  }
+  return list;
+}
+function requiredAdmCount(x){
+  const direct=Number(x?.admQtd);
+  if(Number.isInteger(direct) && direct>0) return direct;
+  const note=String(x?.admObs||"").trim();
+  const match=note.match(/^(\d+)$/);
+  return match ? Number(match[1]) : 0;
+}
+function admProgress(x){
+  const options=["MH","CLASSE","COMPAR","HL"];
+  const sim=options.filter(o=>x?.[o]==="sim").length;
+  const qtd=requiredAdmCount(x);
+  return {sim,qtd,done:qtd>0 ? sim>=qtd : options.every(o=>x?.[o])};
+}
+function isTaskDone(t,d){
+  if(t.cobranca || t.faturamento || t.planilhaAdm) return !!d.tasks[t.id]?.done;
+  if(t.juridico) return (d.tasks[t.id]?.days||[]).length>0;
+  return !!d.tasks[t.id]?.done;
+}
+function completedCount(k){
+  const d=getData(k), tasks=occurrenceTasks(k);
+  return tasks.filter(t=>isTaskDone(t,d)).length;
+}
+function localNowSP(){
+  // Data e hora oficiais de Brasília (America/Sao_Paulo).
+  // Retorna também HH:MM para que tarefas com horário sejam comparadas
+  // exatamente com o horário atual.
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'America/Sao_Paulo', year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', hour12:false
+  }).formatToParts(new Date());
+  const o={}; parts.forEach(p=>o[p.type]=p.value);
+  let hour=Number(o.hour);
+  // Alguns ambientes podem representar meia-noite como 24:xx.
+  if(hour===24) hour=0;
+  return {date:`${o.year}-${o.month}-${o.day}`, hour, minute:Number(o.minute), minutes:hour*60+Number(o.minute)};
+}
+function effectiveTaskDate(t,d){
+  return d.tasks[t.id]?.dueDate || t.date;
+}
+function setTaskDueDate(id,date){
+  const d=getData(selectedMonth);
+  d.tasks[id]??={};
+  if(date) d.tasks[id].dueDate=date; else delete d.tasks[id].dueDate;
+  d.tasks[id].updatedAt=new Date().toISOString();
+  save(); render();
+}
+function taskDateEditor(t,d){
+  const value=effectiveTaskDate(t,d);
+  return `<div style="margin-top:7px;display:flex;align-items:center;gap:7px;flex-wrap:wrap" onclick="event.stopPropagation()">
+    <label style="font-size:10px;color:#56635b;font-weight:700">Data prevista</label>
+    <input class="dateinput" type="date" value="${value}" onchange="setTaskDueDate('${t.id}',this.value)" title="Altere a data em que esta tarefa deverá ser feita">
+    ${value!==t.date?`<span class="meta">Original: ${formatDate(t.date)}</span>`:""}
+  </div>`;
+}
+function taskStatus(t,d,k){
+  if(isTaskDone(t,d)) return "done";
+  const now=localNowSP();
+  const dueDate=effectiveTaskDate(t,d);
+  if(dueDate<now.date) return "overdue";
+  if(dueDate>now.date) return "future";
+
+  // NO DIA DA DATA PREVISTA:
+  // 1) Tarefas com horário: só ficam atrasadas depois do horário informado.
+  // 2) Tarefas sem horário: ficam atrasadas depois de 19:45.
+  const raw=String(t.time||'').trim();
+  const m=raw.match(/^(\d{1,2}):(\d{2})$/);
+  if(m){
+    const h=Number(m[1]), min=Number(m[2]);
+    if(h>=0 && h<=23 && min>=0 && min<=59){
+      const taskMinutes=h*60+min;
+      return now.minutes>taskMinutes ? "overdue" : "today";
+    }
+  }
+  return now.minutes>19*60+45 ? "overdue" : "today";
+}
+function filterTasks(tasks,d,k){
+  return tasks.filter(t=>{
+    const st=taskStatus(t,d,k);
+    if(dailyFilter==="pending") return st!=="done";
+    if(dailyFilter==="overdue") return st==="overdue";
+    if(dailyFilter==="today") return st==="today";
+    if(dailyFilter==="future") return st==="future";
+    return st!=="done";
+  });
+}
+function setDailyFilter(v){ dailyFilter=v; renderDaily(); }
+function renderMonthOptions(){
+  const s=document.getElementById("monthSelect");s.innerHTML="";
+  for(let m=1;m<=12;m++){const o=document.createElement("option");o.value=key(YEAR,m);o.textContent=`${MONTHS[m-1]} ${YEAR}`;s.appendChild(o)}
+  s.value=selectedMonth;
+}
+function setPage(p){
+  currentPage=p;document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(p).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===p));
+  document.getElementById("pageTitle").textContent=p==="daily"?`Tarefas diárias — ${currentPerson}`:p==="invoices"?`Faturas consolidadas — ${currentPerson}`:p==="history"?`Histórico mensal — ${currentPerson}`:"Acompanhamento da equipe";
+  document.getElementById("personBadge").textContent=currentPerson;
+  document.getElementById("pageSub").textContent=p==="daily"?"Acompanhe as atividades e marque cada ocorrência concluída.":p==="invoices"?"Controle de documentos, conferência, coparticipação e provisionamento.":p==="history"?"Meses concluídos e o andamento dos meses em aberto.":"Veja o Jurídico de cada pessoa e acompanhe o envio dos comprovantes.";
+  render();
+}
+function render(){
+  renderMonthOptions();
+  if(currentPage==="daily") renderDaily();
+  if(currentPage==="invoices") renderInvoices();
+  if(currentPage==="history") renderHistory();
+  if(currentPage==="team") renderTeam();
+}
+function renderDaily(){
+  const k=selectedMonth,d=getData(k),tasks=occurrenceTasks(k),done=completedCount(k),pct=tasks.length?Math.round(done/tasks.length*100):0;
+  const today=new Date();const todayIso=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const isCurrent=todayIso.slice(0,7)===k;
+  const pending=tasks.filter(t=>!isTaskDone(t,d));
+  const overdue=pending.filter(t=>taskStatus(t,d,k)==="overdue").length;
+  const todayPending=pending.filter(t=>taskStatus(t,d,k)==="today").length;
+  const futurePending=pending.filter(t=>taskStatus(t,d,k)==="future").length;
+  const visible=filterTasks(tasks,d,k);
+  const pendingByDate={};
+  visible.forEach(t=>{ const date=effectiveTaskDate(t,d); (pendingByDate[date]??=[]).push(t); });
+  let pendingRows="";
+  Object.entries(pendingByDate).sort(([a],[b])=>{
+    const pa=a===todayIso?0:a<todayIso?-1:1, pb=b===todayIso?0:b<todayIso?-1:1;
+    return pa-pb || a.localeCompare(b);
+  }).forEach(([date,ts])=>{
+    const cls=date===todayIso?" today-card":"";
+    const ov=ts.filter(t=>taskStatus(t,d,k)==="overdue").length;
+    pendingRows+=`<div class="card${cls}"><div class="cardhead"><div><h2>${date===todayIso?"📌 Hoje · ":""}${formatDate(date)}</h2><p>${ts.length} tarefa(s) ${ov?`· ${ov} atrasada(s)`:"ainda pendente(s)"}</p></div><span class="pill">${ov?ov+" atrasada(s)":ts.length+" pendente(s)"}</span></div><div class="section"><div class="task-grid">${ts.map(t=>taskHTML(t,d)).join("")}</div></div></div>`;
+  });
+  document.getElementById("daily").innerHTML=`
+    <div class="stats">
+      <div class="stat"><div class="k">Mês</div><div class="v">${MONTHS[ymParts(k).m-1]}</div><div class="s">${ymParts(k).y}</div></div>
+      <div class="stat"><div class="k">Ocorrências</div><div class="v">${done}/${tasks.length}</div><div class="s">concluídas</div></div>
+      <div class="stat"><div class="k">Progresso</div><div class="v">${pct}%</div><div class="progress"><div style="width:${pct}%"></div></div></div>
+      <div class="stat"><div class="k">Pendências</div><div class="v" style="font-size:20px">${pending.length}</div><div class="s">${overdue} atrasada(s) · ${todayPending} para hoje</div></div>
+    </div>
+    ${isCurrent&&overdue?`<div class="alert"><b>⚠️ ${overdue} tarefa(s) atrasada(s).</b> Elas ficam destacadas para você não precisar procurar no calendário.</div>`:""}
+    ${isCurrent&&todayPending?`<div class="notice"><b>📌 Você tem ${todayPending} tarefa(s) para hoje.</b> O filtro “Hoje” mostra somente o que ainda falta fazer neste dia.</div>`:""}
+    ${currentPerson==="Andreina"?`<div class="notice"><b>👤 Área da Andreina:</b> Jurídico aparece somente na sexta-feira; Cobrança na terça; Faturamento nos dias 1, 10 e 20; Atualizar tabela no dia 27; Enviar planilha contábil no dia 10; e Baixar comprovante parc.diversos nos dias 2, 12 e 22. Datas que caem no fim de semana passam para o próximo dia útil.</div>`:""}
+    ${pct===100?`<div class="notice"><b>Todos os itens do mês foram concluídos.</b> Confirme o fechamento para iniciar o próximo mês sem apagar o histórico.</div>`:""}
+    <div class="filterbar">
+      <button class="filterbtn ${dailyFilter==='pending'?'active':''}" onclick="setDailyFilter('pending')">Pendentes (${pending.length})</button>
+      <button class="filterbtn ${dailyFilter==='overdue'?'active':''}" onclick="setDailyFilter('overdue')">Atrasadas (${overdue})</button>
+      <button class="filterbtn ${dailyFilter==='today'?'active':''}" onclick="setDailyFilter('today')">Hoje (${todayPending})</button>
+      <button class="filterbtn ${dailyFilter==='future'?'active':''}" onclick="setDailyFilter('future')">Futuras (${futurePending})</button>
+    </div>
+    <div class="two">
+      <div>${pendingRows || `<div class="card"><div class="empty">Nenhuma tarefa nesta visualização. 🎉</div></div>`}</div>
+      <div>
+        <div class="card"><div class="cardhead"><div><h2>Resumo do dia</h2><p>Visão rápida das pendências</p></div></div><div class="section" style="font-size:12px;line-height:1.9">
+          <div>🔴 <b>${overdue}</b> atrasada(s)</div><div>📌 <b>${todayPending}</b> para hoje</div><div>🗓️ <b>${futurePending}</b> futura(s)</div><div>✅ <b>${done}</b> concluída(s) no mês</div>
+        </div></div>
+        <div class="card"><div class="cardhead"><div><h2>Calendário de marcações</h2><p>Visão rápida das tarefas previstas</p></div></div><div class="section">${calendarHTML(k)}</div></div>
+        <div class="card"><div class="cardhead"><div><h2>Regras deste mês</h2><p>Ocorrências configuradas automaticamente</p></div></div><div class="section" style="font-size:12px;line-height:1.7;color:#5e6b63">
+          • Cada tarefa pendente possui <b>Data prevista</b>, que você pode alterar manualmente.<br>• Com horário definido, a tarefa só fica atrasada depois daquele horário.<br>• Sem horário definido, a tarefa fica atrasada somente após <b>19:45</b>.<br>
+          ${currentPerson==="Andreina"?`• Jurídico: aparece somente na sexta-feira, com opção de marcar Seg a Sex<br>• Cobrança de dependente: terça-feira<br>• Faturamento: dias 1, 10 e 20<br>• Atualizar tabela de dependente: dia 27; se cair no fim de semana, vai para o próximo dia útil<br>• Enviar planilha contábil: dia 10, com seleção de ADM igual ao Faturamento<br>• Baixar comprovante parc.diversos: dias 2, 12 e 22; se cair no fim de semana, vai para o próximo dia útil<br>• Calendário e tarefas: somente segunda a sexta`:`• Conciliação: 08:20<br>• Resultado financeiro: 08:35 e 09:00<br>• Remessa bancária: 11:30 e 17:30<br>• Cobrança de dependente: MH, CLASSE, COMPAR e HL<br>• Faturamento: MH, CLASSE, COMPAR e HL nos dias 1, 10 e 20<br>• Jurídico: cada tarefa permite marcar os dias feitos entre segunda e sexta<br>• Calendário e tarefas: somente segunda a sexta<br>• Planilha contábil: dia 10`}
+        </div></div>
+      </div>
+    </div>
+    ${pct===100?`<div style="display:flex;justify-content:flex-end"><button class="primary" onclick="openModal()">Encerrar ${monthLabel(k)} e iniciar próximo</button></div>`:""}`;
+}
+function historyTaskHTML(t,d){
+  const x=d.tasks[t.id]||{};
+  let detail=t.time;
+  if(x.updatedAt) detail+=` · Registrado ${new Date(x.updatedAt).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}`;
+  if(t.cobranca || t.faturamento || t.planilhaAdm){
+    detail=t.time;
+    const opts=["MH","CLASSE","COMPAR","HL"];
+    const ap=admProgress(x);
+    detail=`${ap.sim} ADM marcada(s)${ap.qtd?` de ${ap.qtd} necessária(s)`:``}${x.admObs?` · Obs.: ${x.admObs}`:``}${x.updatedAt?` · Registrado ${new Date(x.updatedAt).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}`:``}`;
+  } else if(t.juridico){
+    detail=t.time;
+    const labels={"1":"Seg","2":"Ter","3":"Qua","4":"Qui","5":"Sex"};
+    detail=`Dias feitos: ${(x.days||[]).map(n=>labels[n]).join(", ")}${x.updatedAt?` · Registrado ${new Date(x.updatedAt).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}`:``}`;
+  }
+  return `<div class="history-item"><div class="history-main"><div class="history-check">✓</div><div><div class="history-name">${t.name}</div><div class="history-meta">${formatDate(t.date)} · ${detail}</div></div></div><button class="history-reset" onclick="resetTask('${t.id}')">Desfazer</button></div>`;
+}
+function taskHTML(t,d){
+ if(t.cobranca) return cobrancaHTML(t,d);
+ if(t.faturamento) return faturamentoHTML(t,d);
+ if(t.planilhaAdm) return admControls(t,d,"planilha");
+ if(t.juridico) return juridicoHTML(t,d);
+ const done=!!d.tasks[t.id]?.done; const status=taskStatus(t,d,selectedMonth);
+ return `<div class="task ${done?"done":""}" onclick="toggleTask('${t.id}')"><div class="check"></div><div><div class="taskname">${t.name}</div><div class="meta">${t.time} · ${t.type}${status==="overdue"?" · ⚠️ Atrasada":""}</div>${taskDateEditor(t,d)}</div><span class="pill">${done?"Feito":status==="overdue"?"Atrasada":"Marcar"}</span></div>`;
+}
+function admControls(t,d,kind){
+ const x=d.tasks[t.id]||{};
+ const options=["MH","CLASSE","COMPAR","HL"];
+ const ap=admProgress(x);
+ const setter=kind==="cobranca"?"setCobranca":"setFaturamento";
+ return `<div class="task custom-task"><div style="width:20px;height:20px;border-radius:6px;background:var(--soft);display:grid;place-items:center;color:var(--accent);font-weight:900">${kind==="cobranca"?"C":"F"}</div><div>
+   <div class="taskname">${t.name}</div>
+   <div class="meta">Marque Sim ou Não apenas nas ADMs que você realizou. Se você fizer só 1 ADM, por exemplo, informe <b>1</b> em “Qtd. de ADM feitas” e a tarefa será concluída ao marcar uma ADM como Sim.</div>
+   <div class="adm-grid">${options.map(opt=>{
+      const v=x[opt]||"";
+      return `<div class="adm-option"><strong>${opt}</strong><div class="choice">
+        <button class="${v==="sim"?"selected":""}" onclick="event.stopPropagation();${setter}('${t.id}','${opt}','sim')">Sim</button>
+        <button class="${v==="nao"?"selected":""}" onclick="event.stopPropagation();${setter}('${t.id}','${opt}','nao')">Não</button>
+      </div></div>`;
+   }).join("")}</div>
+   <div style="display:grid;grid-template-columns:150px 1fr;gap:8px;margin-top:9px">
+     <div><label style="display:block;font-size:10px;color:#56635b;margin-bottom:4px">Qtd. de ADM feitas</label><input id="qtd-${t.id}" class="dateinput" type="number" min="1" max="4" value="${x.admQtd||""}" placeholder="Ex.: 1" onchange="setAdmInfo('${t.id}','${kind}',this.value,document.getElementById('obs-${t.id}').value)" onclick="event.stopPropagation()"></div>
+     <div><label style="display:block;font-size:10px;color:#56635b;margin-bottom:4px">Observação</label><input id="obs-${t.id}" class="dateinput" style="width:100%" value="${x.admObs||""}" placeholder="Ex.: Classe" onchange="setAdmInfo('${t.id}','${kind}',document.getElementById('qtd-${t.id}').value,this.value)" onclick="event.stopPropagation()"></div>
+   </div>
+   <div class="meta" style="margin-top:6px">${ap.qtd?`${Math.min(ap.sim,ap.qtd)}/${ap.qtd} ADM feita(s) · faltam ${Math.max(ap.qtd-ap.sim,0)}`:ap.sim?`${ap.sim} ADM marcada(s)`: `Nenhuma ADM marcada`} ${ap.done?"· ✓ Concluído e enviado para o histórico":""}</div>
+   ${taskDateEditor(t,d)}
+ </div><span class="pill">${ap.done?"Feito":ap.qtd?`${Math.min(ap.sim,ap.qtd)}/${ap.qtd}`:`${options.filter(o=>x[o]).length}/4`}</span></div>`;
+}
+function cobrancaHTML(t,d){ return admControls(t,d,"cobranca"); }
+function faturamentoHTML(t,d){ return admControls(t,d,"faturamento"); }
+function setAdmInfo(id,kind,qty,obs){
+ const d=getData(selectedMonth); d.tasks[id]??={};
+ d.tasks[id].admQtd=Math.max(0,Math.min(4,parseInt(qty||0,10)||0));
+ d.tasks[id].admObs=String(obs||"");
+ const ap=admProgress(d.tasks[id]); d.tasks[id].done=ap.done;
+ d.tasks[id].updatedAt=new Date().toISOString(); save(); render();
+}
+function setFaturamento(id,adm,value){
+ const d=getData(selectedMonth); d.tasks[id]??={}; d.tasks[id][adm]=value;
+ const ap=admProgress(d.tasks[id]); d.tasks[id].done=ap.done;
+ d.tasks[id].updatedAt=new Date().toISOString(); save(); render();
+}
+function juridicoHTML(t,d){
+ const days=[["Seg","1"],["Ter","2"],["Qua","3"],["Qui","4"],["Sex","5"]];
+ const selected=d.tasks[t.id]?.days||[];
+ const currentLabel=t.time;
+ return `<div class="task juridico-task"><div style="width:20px;height:20px;border-radius:6px;background:var(--soft);display:grid;place-items:center;color:var(--accent);font-weight:900">J</div><div>
+   <div class="taskname">${t.name}</div>
+   <div class="meta">Realização: ${currentLabel}. Marque o(s) dia(s) da semana em que você fez esta tarefa.</div>
+   <div class="weekday-picker">${days.map(([label,n])=>{
+      const active=selected.includes(n);
+      return `<button class="${active?"selected":""}" onclick="event.stopPropagation();toggleJuridicoDay('${t.id}','${n}')">${label}</button>`;
+   }).join("")}</div>
+   ${taskDateEditor(t,d)}
+ </div><span class="pill">${selected.length?selected.length+" dia"+(selected.length===1?"":"s"):"Marcar"}</span></div>`;
+}
+function setCobranca(id,adm,value){
+ const d=getData(selectedMonth); d.tasks[id]??={}; d.tasks[id][adm]=value;
+ const ap=admProgress(d.tasks[id]); d.tasks[id].done=ap.done;
+ d.tasks[id].updatedAt=new Date().toISOString(); save(); render();
+}
+function toggleJuridicoDay(id,day){
+ const d=getData(selectedMonth);
+ d.tasks[id]??={};
+ d.tasks[id].days??=[];
+ const arr=d.tasks[id].days;
+ const idx=arr.indexOf(day);
+ if(idx>=0) arr.splice(idx,1); else arr.push(day);
+ d.tasks[id].done=arr.length>0;
+ d.tasks[id].updatedAt=new Date().toISOString();
+ save(); render();
+}
+function toggleTask(id){
+ const d=getData(selectedMonth);d.tasks[id]={done:!d.tasks[id]?.done,updatedAt:new Date().toISOString()};save();render();
+ if(completedCount(selectedMonth)===occurrenceTasks(selectedMonth).length) showToast("Todas as tarefas do mês foram concluídas!");
+}
+function resetTask(id){
+  const d=getData(selectedMonth);
+  delete d.tasks[id];
+  save();
+  render();
+}
+function formatDate(iso){const [y,m,d]=iso.split("-").map(Number);return `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}/${y} · ${DAYS[new Date(y,m-1,d).getDay()]}`}
+function calendarHTML(k){
+ const {y,m}=ymParts(k), total=new Date(y,m,0).getDate(), d=getData(k);
+ const weekdays=["Seg","Ter","Qua","Qui","Sex"];
+ let out='<div class="calendar">'+weekdays.map(x=>`<div class="dow">${x}</div>`).join("");
+ for(let n=1;n<=total;n++){
+   const dateObj=new Date(y,m-1,n), wd=dateObj.getDay();
+   if(wd===0 || wd===6) continue;
+   const iso=`${y}-${String(m).padStart(2,'0')}-${String(n).padStart(2,'0')}`;
+   const ts=occurrenceTasks(k).filter(t=>t.date===iso), done=ts.filter(t=>isTaskDone(t,d)).length;
+   const todayIso=localNowSP().date;const cls=(todayIso===iso)?"today":"";
+   out+=`<div class="day ${cls}"><div class="daynum">${n}</div><div class="dots">${ts.slice(0,8).map(t=>`<span class="dot ${t.juridico ? ((d.tasks[t.id]?.days||[]).length>0?"done":"") : (d.tasks[t.id]?.done?"done":"")}"></span>`).join("")}</div><div style="font-size:9px;color:#87928b;margin-top:5px">${done}/${ts.length}</div></div>`;
+ }
+ return out+"</div>";
+}
+function invoiceFallbackDay(name){
+ const m=String(name).match(/[–-]\s*(\d{1,2})/);
+ return m?Number(m[1]):0;
+}
+function invoiceSortDay(name,i,d){
+ const x=d.invoices[i]||{};
+ return invoiceDueDay(i,x)||invoiceFallbackDay(name)||99;
+}
+function renderInvoices(){
+ const d=getData(selectedMonth);
+ const items=currentInvoices().map((name,i)=>({name,i,day:invoiceSortDay(name,i,d)})).sort((a,b)=>a.day-b.day || a.i-b.i);
+ const known=items.filter(x=>x.day<99);
+ const early=known.filter(x=>x.day<=10).length;
+ const mid=known.filter(x=>x.day>=11 && x.day<=20).length;
+ const late=known.filter(x=>x.day>=21).length;
+ document.getElementById("invoices").innerHTML=`
+ <div class="card"><div class="cardhead"><div><h2>Faturas consolidadas do mês — ${monthLabel(selectedMonth)}</h2><p>As faturas são organizadas automaticamente pelo dia de vencimento. Ao informar um vencimento, a posição é atualizada na hora.</p></div><span class="pill">${currentInvoices().length} itens</span></div><div class="section"><div class="invoice-toolbar"><span class="mini-stat">📅 <b>Ordenação:</b> vencimento mais próximo primeiro</span><span class="mini-stat">Início do mês: <b>${early}</b></span><span class="mini-stat">Meio: <b>${mid}</b></span><span class="mini-stat">Final: <b>${late}</b></span></div><div class="invoice-grid">${items.map(({name,i})=>invoiceHTML(name,i,d)).join("")}</div></div></div>`;
+}
+function invoiceHTML(name,i,d){
+ const x=d.invoices[i]||{};
+ if(currentPerson==="Joice" && name==="HOSPITALAR COMPAR – 5,15-25") return invoiceHospitalarCompar(name,i,d);
+ if(currentPerson==="Andreina" && ["KLINI – 1,11-21","FÁTIMA SAÚDE – 10,15-25","HUMANA MH – 10,15-25","HUMANA ADESÃO RS – 10,15-25"].includes(name)) return invoiceAndreinaVigencias(name,i,d);
+ return `<div class="invoice"><h3><span>${name}</span>${invoiceDueDay(i,x)?`<span class="due-badge">Vence dia ${String(invoiceDueDay(i,x)).padStart(2,"0")}</span>`:`<span class="due-badge neutral">Vencimento não informado</span>`}</h3>
+ <div class="field"><label>Salvar docs</label><div class="choice">${choice(i,"saveDocs",x.saveDocs)}</div></div>
+ <div class="field"><label>Conferência</label><div class="choice">${choice(i,"conference",x.conference)}</div></div>
+ ${x.copart==="nao_tem"?`<div class="copart-hidden"><b>Coparticipação:</b> não tem nesta operadora/vigência. <button class="smallbtn" onclick="restoreCopart(${i})">Reativar</button></div>`:`<div class="field"><label>Lançado coparticipação</label><div class="choice">${choice(i,"copart",x.copart)}<button class="smallbtn" onclick="setCopartNone(${i})">Não tem</button></div></div>
+ ${x.copart==="sim"?`<div class="field"><label>Data lançado</label><input class="dateinput" type="date" value="${x.copartDate||""}" onchange="setInvDate(${i},'copartDate',this.value)"></div>`:""}`}
+ <div class="field"><label>Provisionamento</label><div class="choice">${choice(i,"provision",x.provision)}</div></div>
+ ${x.provision==="sim"?`<div class="field"><label>Data lançado</label><input class="dateinput" type="date" value="${x.provisionDate||""}" onchange="setInvDate(${i},'provisionDate',this.value)"></div>`:""}
+ <div class="field stack"><label>Observações</label><textarea onchange="setInvNote(${i},this.value)" placeholder="Escreva uma observação...">${x.note||""}</textarea></div>
+ <div class="invoice-due"><div class="field" style="margin:0"><label><b>Vencimento do boleto</b></label><input class="dateinput" type="date" value="${invoiceDueDate(x,i)}" onchange="setInvDueDate(${i},this.value)"></div>${invoiceDueDate(x,i)?`<div class="meta" style="margin-top:5px">${dueLabel(invoiceDueDate(x,i),x.provisionDate)} · O dia ${String(invoiceDueDay(i,x)).padStart(2,'0')} será repetido automaticamente nos próximos meses.</div>`:`<div class="meta" style="margin-top:5px">Informe uma vez a data de vencimento; nos próximos meses o sistema repetirá automaticamente o mesmo dia.</div>`}</div>
+ </div>`;
+}
+function invoiceAndreinaVigencias(name,i,d){
+ const x=d.invoices[i]||{};
+ const map={
+   "KLINI – 1,11-21":["01","11","21"],
+   "FÁTIMA SAÚDE – 10,15-25":["10","15","25"],
+   "HUMANA MH – 10,15-25":["10","15","25"],
+   "HUMANA ADESÃO RS – 10,15-25":["10","15","25"]
+ };
+ const vigs=map[name]||[];
+ return `<div class="invoice"><h3><span>${name}</span>${invoiceDueDay(i,x)?`<span class="due-badge">Vence dia ${String(invoiceDueDay(i,x)).padStart(2,"0")}</span>`:`<span class="due-badge neutral">Vencimento não informado</span>`}</h3>
+ <div class="field"><label>Salvar docs</label><div class="choice">${choice(i,"saveDocs",x.saveDocs)}</div></div>
+ <div class="field"><label>Conferência</label><div class="choice">${choice(i,"conference",x.conference)}</div></div>
+ <div class="field stack"><label>Lançado coparticipação — controle por vigência</label>
+ <div style="display:grid;gap:7px;margin-top:7px">${vigs.map(v=>{ const k=`vig${v}`; const item=x[k]||{}; if(item.status==="nao_tem") return `<div class="copart-hidden"><b>Vigência ${v}:</b> sem coparticipação. <button class="smallbtn" onclick="restoreCopart(${i},'${v}')">Reativar</button></div>`; return `<div style="border:1px solid var(--line);border-radius:9px;padding:8px;background:#fafcf9"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:11px">Vigência ${v}</b><div class="choice">${["sim","nao"].map(val=>`<button class="${item.status===val?"selected":""}" onclick="setVigencia(${i},'${v}','${val}')">${val==="sim"?"Lançado":"Pendente"}</button>`).join("")}<button class="smallbtn" onclick="setCopartNone(${i},'${v}')">Não tem</button></div></div>${item.status==="sim"?`<div style="margin-top:6px"><label style="font-size:10px;color:#56635b">Data do lançamento</label><input class="dateinput" type="date" value="${item.date||""}" onchange="setVigenciaDate(${i},'${v}',this.value)"></div>`:""}</div>`;}).join("")}</div>
+ </div>
+ <div class="field"><label>Provisionamento</label><div class="choice">${choice(i,"provision",x.provision)}</div></div>
+ ${x.provision==="sim"?`<div class="field"><label>Data provisionamento</label><input class="dateinput" type="date" value="${x.provisionDate||""}" onchange="setInvDate(${i},'provisionDate',this.value)"></div>`:""}
+ <div class="field stack"><label>Observações</label><textarea onchange="setInvNote(${i},this.value)" placeholder="Escreva uma observação...">${x.note||""}</textarea></div>
+ <div class="invoice-due"><div class="field" style="margin:0"><label><b>Vencimento do boleto</b></label><input class="dateinput" type="date" value="${invoiceDueDate(x,i)}" onchange="setInvDueDate(${i},this.value)"></div>${invoiceDueDate(x,i)?`<div class="meta" style="margin-top:5px">${dueLabel(invoiceDueDate(x,i),x.provisionDate)} · O dia ${String(invoiceDueDay(i,x)).padStart(2,'0')} será repetido automaticamente nos próximos meses.</div>`:`<div class="meta" style="margin-top:5px">Informe uma vez a data de vencimento; nos próximos meses o sistema repetirá automaticamente o mesmo dia.</div>`}</div>
+ </div>`;
+}
+function invoiceHospitalarCompar(name,i,d){
+ const x=d.invoices[i]||{};
+ const vigs=["05","15","25"];
+ return `<div class="invoice"><h3><span>${name}</span>${invoiceDueDay(i,x)?`<span class="due-badge">Vence dia ${String(invoiceDueDay(i,x)).padStart(2,"0")}</span>`:`<span class="due-badge neutral">Vencimento não informado</span>`}</h3>
+ <div class="field"><label>Salvar docs</label><div class="choice">${choice(i,"saveDocs",x.saveDocs)}</div></div>
+ <div class="field"><label>Conferência</label><div class="choice">${choice(i,"conference",x.conference)}</div></div>
+ <div class="field stack"><label>Lançado coparticipação — controle por vigência</label>
+ <div style="display:grid;gap:7px;margin-top:7px">${vigs.map(v=>{ const k=`vig${v}`; const item=x[k]||{}; if(item.status==="nao_tem") return `<div class="copart-hidden"><b>Vigência ${v}:</b> sem coparticipação. <button class="smallbtn" onclick="restoreCopart(${i},'${v}')">Reativar</button></div>`; return `<div style="border:1px solid var(--line);border-radius:9px;padding:8px;background:#fafcf9"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:11px">Vigência ${v}</b><div class="choice">${["sim","nao"].map(val=>`<button class="${item.status===val?"selected":""}" onclick="setVigencia(${i},'${v}','${val}')">${val==="sim"?"Lançado":"Pendente"}</button>`).join("")}<button class="smallbtn" onclick="setCopartNone(${i},'${v}')">Não tem</button></div></div>${item.status==="sim"?`<div style="margin-top:6px"><label style="font-size:10px;color:#56635b">Data do lançamento</label><input class="dateinput" type="date" value="${item.date||""}" onchange="setVigenciaDate(${i},'${v}',this.value)"></div>`:""}</div>`;}).join("")}</div>
+ </div>
+ <div class="field"><label>Provisionamento</label><div class="choice">${choice(i,"provision",x.provision)}</div></div>
+ ${x.provision==="sim"?`<div class="field"><label>Data provisionamento</label><input class="dateinput" type="date" value="${x.provisionDate||""}" onchange="setInvDate(${i},'provisionDate',this.value)"></div>`:""}
+ <div class="field stack"><label>Observações</label><textarea onchange="setInvNote(${i},this.value)" placeholder="Escreva uma observação...">${x.note||""}</textarea></div>
+ <div class="invoice-due"><div class="field" style="margin:0"><label><b>Vencimento do boleto</b></label><input class="dateinput" type="date" value="${invoiceDueDate(x,i)}" onchange="setInvDueDate(${i},this.value)"></div>${invoiceDueDate(x,i)?`<div class="meta" style="margin-top:5px">${dueLabel(invoiceDueDate(x,i),x.provisionDate)} · O dia ${String(invoiceDueDay(i,x)).padStart(2,'0')} será repetido automaticamente nos próximos meses.</div>`:`<div class="meta" style="margin-top:5px">Informe uma vez a data de vencimento; nos próximos meses o sistema repetirá automaticamente o mesmo dia.</div>`}</div>
+ </div>`;
+}
+function choice(i,field,val){return ["sim","nao"].map(v=>`<button class="${val===v?"selected":""}" onclick="setInv(${i},'${field}','${v}')">${v==="sim"?"Sim":"Não"}</button>`).join("")}
+function setVigencia(i,v,status){ const d=getData(selectedMonth); d.invoices[i]??={}; d.invoices[i][`vig${v}`]??={}; d.invoices[i][`vig${v}`].status=status; if(status!=="sim") d.invoices[i][`vig${v}`].date=""; save(); renderInvoices(); }
+function setVigenciaDate(i,v,date){ const d=getData(selectedMonth); d.invoices[i]??={}; d.invoices[i][`vig${v}`]??={}; d.invoices[i][`vig${v}`].date=date; save(); renderInvoices(); }
+function setInv(i,f,v){const d=getData(selectedMonth);d.invoices[i]??={};d.invoices[i][f]=v;save();renderInvoices()}
+function setInvDate(i,f,v){const d=getData(selectedMonth);d.invoices[i]??={};d.invoices[i][f]=v;save()}
+function setInvNote(i,v){const d=getData(selectedMonth);d.invoices[i]??={};d.invoices[i].note=v;save()}
+function renderHistory(){
+ const keys=Object.keys(personDb()).filter(k=>/^\d{4}-\d{2}$/.test(k)).sort().reverse();
+ const d=getData(selectedMonth), tasks=occurrenceTasks(selectedMonth), completed=tasks.filter(t=>isTaskDone(t,d));
+ document.getElementById("history").innerHTML=`
+ <div class="card"><div class="cardhead"><div><h2>Histórico de tarefas — ${monthLabel(selectedMonth)}</h2><p>Aqui ficam somente as tarefas que você já concluiu. Elas não aparecem mais na tela de tarefas diárias.</p></div><span class="pill">${completed.length} concluída(s)</span></div>
+ <div class="section">${completed.length?`<div class="history-list">${completed.map(t=>historyTaskHTML(t,d)).join("")}</div>`:`<div class="empty">Nenhuma tarefa concluída neste mês ainda.</div>`}</div></div>
+ <div class="card"><div class="cardhead"><div><h2>Histórico mensal</h2><p>Todos os meses com registros ficam aqui, mesmo que o mês ainda não tenha sido formalmente encerrado.</p></div></div><div class="section"><div class="list">${keys.length?keys.map(k=>{
+  const total=occurrenceTasks(k).length,done=completedCount(k),p=total?Math.round(done/total*100):0;
+  return `<div class="row"><div><b style="font-size:13px">${monthLabel(k)}</b><div class="meta">${done}/${total} ocorrências · ${p}%${personDb()[k]?.closed?" · mês encerrado":""}</div></div><div class="actions"><span class="pill">${p===100?"✓ Concluído":"Em andamento"}</span><button class="smallbtn" onclick="selectMonth('${k}')">Abrir</button></div></div>`
+ }).join(""):`<div class="empty">Ainda não há histórico salvo.</div>`}</div></div></div>
+ <div class="card"><div class="cardhead"><div><h2>Como a persistência funciona</h2><p>Feita para não perder suas marcações ao voltar ao site.</p></div></div><div class="section" style="font-size:12px;line-height:1.7;color:#5e6b63">
+ • As tarefas concluídas somem de <b>Tarefas diárias</b> e ficam registradas aqui.<br>• As tarefas são armazenadas no <b>localStorage</b> deste navegador, separadas por ano/mês.<br>• Na área da Andreina, o Jurídico aparece somente na sexta-feira, mas permite marcar os dias feitos de Seg a Sex.<br>• A quantidade de ADM e a observação ficam registradas junto da conclusão.<br>• O histórico registra o momento em que a tarefa foi concluída ou atualizada.<br>
+ • Fechar e abrir o site não apaga o mês atual.<br>
+ • Ao completar todas as ocorrências, o botão de encerramento inicia o próximo mês e conserva o anterior no histórico.<br>
+ • As faturas consolidadas também ficam separadas por mês.
+ </div></div>`;
+}
+function teamDb(k){
+  db.__team??={};
+  db.__team[k]??={};
+  return db.__team[k];
+}
+function personJuridicoTasks(person,k){
+  const prev=currentPerson;
+  currentPerson=person;
+  const tasks=occurrenceTasks(k).filter(t=>t.juridico);
+  currentPerson=prev;
+  return tasks;
+}
+function setTeamComprovante(person,date,status){
+  const td=teamDb(selectedMonth);
+  td[`${person}_${date}`]??={};
+  td[`${person}_${date}`].comprovante=status;
+  td[`${person}_${date}`].updatedAt=new Date().toISOString();
+  save(); renderTeam();
+}
+function setTeamPrazo(person,date,value){
+  const td=teamDb(selectedMonth);
+  td[`${person}_${date}`]??={};
+  td[`${person}_${date}`].prazo=value;
+  save(); renderTeam();
+}
+
+function escHtml(v){
+  return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+function teamRecords(k){
+  const td=teamDb(k);
+  td.records??=[];
+  return td.records;
+}
+function openTeamAdd(){
+  const el=document.getElementById("teamAddModal");
+  if(!el) return;
+  el.classList.add("show");
+  const today=localNowSP().date;
+  document.getElementById("teamEmailDate").value=today;
+  document.getElementById("teamAddDate").value=today;
+  document.getElementById("teamPrazoDate").value="";
+  document.getElementById("teamValor").value="";
+  document.getElementById("teamProtocolo").value="";
+  document.getElementById("teamObs").value="";
+  document.getElementById("teamComprovanteStatus").value="pendente";
+}
+function closeTeamAdd(){
+  const el=document.getElementById("teamAddModal");
+  if(el) el.classList.remove("show");
+}
+function saveTeamRecord(){
+  const protocolo=document.getElementById("teamProtocolo").value.trim();
+  if(!protocolo){ showToast("Informe o protocolo ou nome do cliente."); return; }
+  const k=selectedMonth;
+  const records=teamRecords(k);
+  const addDate=document.getElementById("teamAddDate").value || localNowSP().date;
+  const rec={
+    id:`rec_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    person:currentPerson,
+    protocolo,
+    emailDate:document.getElementById("teamEmailDate").value || "",
+    valor:document.getElementById("teamValor").value || "",
+    prazo:document.getElementById("teamPrazoDate").value || "",
+    comprovante:document.getElementById("teamComprovanteStatus").value || "pendente",
+    comprovanteDate:"",
+    observacao:document.getElementById("teamObs").value.trim(),
+    addedAt:new Date().toISOString(),
+    addedDate:addDate,
+    addedWeekday:new Date(`${addDate}T12:00:00`).getDay(),
+    status:"ativo"
+  };
+  records.push(rec);
+  save(); closeTeamAdd(); showToast(`Registro adicionado por ${currentPerson}.`); renderTeam();
+}
+function setTeamRecordComprovante(id,status){
+  const records=teamRecords(selectedMonth);
+  const rec=records.find(r=>r.id===id);
+  if(!rec) return;
+  rec.comprovante=status;
+  if(status==="encaminhado"){
+    rec.comprovanteDate=localNowSP().date;
+    rec.status="historico";
+    rec.sentAt=new Date().toISOString();
+  }else{
+    rec.comprovanteDate="";
+    rec.status="ativo";
+  }
+  save(); renderTeam();
+}
+function setTeamRecordDate(id,field,value){
+  const rec=teamRecords(selectedMonth).find(r=>r.id===id);
+  if(!rec) return;
+  rec[field]=value;
+  save(); renderTeam();
+}
+function teamWeekday(iso){
+  const n=new Date(`${iso}T12:00:00`).getDay();
+  return {0:"Dom",1:"Seg",2:"Ter",3:"Qua",4:"Qui",5:"Sex",6:"Sáb"}[n]||"";
+}
+function teamRecordCard(r, history=false){
+  const sent=r.comprovante==="encaminhado";
+  const cancelled=r.status==="cancelado";
+  const badge=cancelled?"✕ Cancelado":(history?"✓ Encaminhado":"⏳ Pendente");
+  return `<details class="row" style="display:block;padding:0 0 2px;border-bottom:1px solid var(--line)">
+    <summary class="team-summary"><div><strong>${escHtml(r.protocolo)}</strong><div class="meta">${escHtml(r.person)} · Incluído em ${formatDate(r.addedDate)} · ${xDate(r.addedAt)}</div></div><span class="pill">${badge}</span></summary>
+    <div class="team-details">
+      <div class="two">
+        <div class="field"><label>Data e-mail</label><input class="dateinput" type="date" value="${escHtml(r.emailDate||"")}" onchange="setTeamRecordDate('${r.id}','emailDate',this.value)"></div>
+        <div class="field"><label>Valor</label><input class="dateinput" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${escHtml(r.valor||"")}" onchange="setTeamRecordDate('${r.id}','valor',this.value)"></div>
+        <div class="field"><label>Prazo</label><input class="dateinput" type="date" value="${escHtml(r.prazo||"")}" onchange="setTeamRecordDate('${r.id}','prazo',this.value)"></div>
+        ${!cancelled?`<div class="field"><label>Comprovante</label><div class="choice"><button class="smallbtn" onclick="setTeamRecordComprovante('${r.id}','pendente')">Pendente</button><button class="smallbtn" onclick="setTeamRecordComprovante('${r.id}','encaminhado')">✓ Encaminhado</button></div></div>`:`<div class="field"><label>Motivo da exclusão</label><span class="meta">${escHtml(r.cancelReason||"")}</span></div>`}
+        ${sent?`<div class="field"><label>Data envio comprovante</label><input class="dateinput" type="date" value="${escHtml(r.comprovanteDate||"")}" onchange="setTeamRecordDate('${r.id}','comprovanteDate',this.value)"></div>`:""}
+      </div>
+      ${r.observacao?`<div class="meta" style="margin-top:8px"><b>Observação:</b> ${escHtml(r.observacao)}</div>`:""}
+      ${!history&&!cancelled?`<div class="actions" style="justify-content:flex-end;margin-top:10px"><button class="smallbtn team-cancel" onclick="openTeamDelete('${r.id}')">Excluir acompanhamento</button></div>`:""}
+      ${cancelled?`<div class="meta" style="margin-top:8px">Excluído em ${xDate(r.cancelledAt)}</div>`:""}
+    </div>
+  </details>`;
+}
+function openTeamDelete(id){
+  const modal=document.getElementById('teamDeleteModal'); if(!modal) return;
+  modal.dataset.id=id; document.getElementById('teamDeleteReason').value=''; modal.classList.add('show');
+}
+function closeTeamDelete(){const m=document.getElementById('teamDeleteModal'); if(m) m.classList.remove('show');}
+function confirmTeamDelete(){
+  const m=document.getElementById('teamDeleteModal'); const id=m?.dataset.id; const reason=document.getElementById('teamDeleteReason')?.value.trim();
+  if(!id) return; if(!reason){showToast('Informe o motivo da exclusão antes de continuar.');return;}
+  const rec=teamRecords(selectedMonth).find(r=>r.id===id); if(!rec) return;
+  rec.status='cancelado'; rec.cancelReason=reason; rec.cancelledAt=new Date().toISOString(); rec.cancelledBy=currentPerson;
+  save(); closeTeamDelete(); showToast('Acompanhamento cancelado e enviado para o histórico.'); renderTeam();
+}
+function renderTeam(){
+  const k=selectedMonth;
+  const records=teamRecords(k);
+  const activeRecords=records.filter(r=>r.status==='ativo');
+  const historyRecords=records.filter(r=>r.status==='historico');
+  const cancelledRecords=records.filter(r=>r.status==='cancelado');
+  document.getElementById("team").innerHTML=`
+  <div class="notice"><b>👥 Acompanhamento da equipe</b><br>Use esta área para registrar somente os Jurídicos que realmente forem enviados. <b>Ao incluir, o sistema registra automaticamente ${escHtml(currentPerson)} como responsável pela inclusão.</b></div>
+
+  <div class="card">
+    <div class="cardhead">
+      <div><h2>📥 Incluir Jurídico / pagamento</h2><p>Inclua um acompanhamento quando receber o Jurídico. Ele ficará pendente até o comprovante ser encaminhado.</p></div>
+      <button class="primary" onclick="openTeamAdd()">+ Incluir</button>
+    </div>
+    <div class="section">
+      ${activeRecords.length?`<div class="list">${activeRecords.map(r=>teamRecordCard(r,false)).join("")}</div>`:`<div class="empty">Nenhum acompanhamento pendente de comprovante.</div>`}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cardhead"><div><h2>🗂️ Histórico de encaminhados</h2><p>Quando o comprovante for encaminhado, o acompanhamento sai dos pendentes e fica aqui.</p></div><span class="pill">${historyRecords.length} concluído(s)</span></div>
+    <div class="section">${historyRecords.length?`<div class="list">${historyRecords.slice().sort((a,b)=>(b.sentAt||"").localeCompare(a.sentAt||"")).map(r=>teamRecordCard(r,true)).join("")}</div>`:`<div class="empty">Nenhum comprovante encaminhado neste mês.</div>`}</div>
+  </div>
+
+  <div class="card">
+    <div class="cardhead"><div><h2>🗃️ Histórico de Jurídicos cancelados</h2><p>Os acompanhamentos excluídos ficam registrados com o motivo para controle.</p></div><span class="pill">${cancelledRecords.length} cancelado(s)</span></div>
+    <div class="section">${cancelledRecords.length?`<div class="list">${cancelledRecords.slice().sort((a,b)=>(b.cancelledAt||"").localeCompare(a.cancelledAt||"")).map(r=>teamRecordCard(r,true)).join("")}</div>`:`<div class="empty">Nenhum Jurídico cancelado neste mês.</div>`}</div>
+  </div>
+
+  <div class="modal" id="teamAddModal">
+    <div class="modalbox">
+      <h2>➕ Incluir acompanhamento</h2>
+      <p style="margin-top:4px">Incluindo como <b>${escHtml(currentPerson)}</b>. Ao salvar, o sistema registra automaticamente a data e o dia da semana em que o Jurídico foi adicionado.</p>
+      <div class="two" style="margin-top:14px">
+        <div class="field stack"><label>Protocolo ou nome do cliente</label><input id="teamProtocolo" placeholder="Ex.: 12345 ou Cliente ABC"></div>
+        <div class="field stack"><label>Data em que o Jurídico foi adicionado</label><input id="teamAddDate" class="dateinput" type="date"></div>
+        <div class="field stack"><label>Data e-mail</label><input id="teamEmailDate" class="dateinput" type="date"></div>
+        <div class="field stack"><label>Valor</label><input id="teamValor" class="dateinput" type="text" inputmode="decimal" placeholder="R$ 0,00"></div>
+        <div class="field stack"><label>Prazo para pagamento</label><input id="teamPrazoDate" class="dateinput" type="date"></div>
+        <div class="field stack"><label>Comprovante</label><select id="teamComprovanteStatus"><option value="pendente">Pendente</option><option value="encaminhado">Encaminhado</option></select></div>
+        <div class="field stack" style="grid-column:1/-1"><label>Observação</label><textarea id="teamObs" placeholder="Observações, detalhes ou orientação..."></textarea></div>
+      </div>
+      <div class="actions" style="justify-content:flex-end;margin-top:16px"><button class="ghost" onclick="closeTeamAdd()">Cancelar</button><button class="primary" onclick="saveTeamRecord()">Salvar acompanhamento</button></div>
+    </div>
+  </div>
+  <div class="modal" id="teamDeleteModal">
+    <div class="modalbox">
+      <h2>⚠️ Excluir acompanhamento?</h2>
+      <p>Tem certeza que deseja excluir este acompanhamento? Ele será movido para o histórico de Jurídicos cancelados.</p>
+      <div class="field stack" style="margin-top:14px"><label>Motivo da exclusão <b>(obrigatório)</b></label><textarea id="teamDeleteReason" placeholder="Informe por que este Jurídico está sendo excluído..."></textarea></div>
+      <div class="actions" style="justify-content:flex-end;margin-top:14px"><button class="ghost" onclick="closeTeamDelete()">Não</button><button class="primary" onclick="confirmTeamDelete()">Sim, excluir</button></div>
+    </div>
+  </div>`;
+}
+function personDbFor(person,k){ return db[person]?.[k] || {tasks:{}}; }
+function xDate(v){ return v?new Date(v).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}):""; }
+function setPerson(person){
+  if(!PEOPLE.includes(person)) return;
+  currentPerson=person;
+  dailyFilter="pending";
+  save();
+  document.querySelectorAll(".people-nav button").forEach(b=>b.classList.toggle("active",b.dataset.person===currentPerson));
+  setPage(currentPage);
+  showToast(`Área de ${currentPerson} selecionada`);
+}
+function selectMonth(k){selectedMonth=k;save();setPage("daily")}
+function openModal(){document.getElementById("finishModal").classList.add("show")}
+function closeModal(){document.getElementById("finishModal").classList.remove("show")}
+function advanceMonth(){
+ const {y,m}=ymParts(selectedMonth);const next=m===12?key(y+1,1):key(y,m+1);
+ getData(selectedMonth).closed=true;getData(next);selectedMonth=next;save();closeModal();showToast(`Novo mês iniciado: ${monthLabel(next)}`);render();
+}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>setPage(b.dataset.page)));
+document.querySelectorAll(".people-nav button").forEach(b=>b.addEventListener("click",()=>setPerson(b.dataset.person)));
+document.getElementById("monthSelect").addEventListener("change",e=>{selectedMonth=e.target.value;save();render()});
+function updateClock(){ const el=document.getElementById("clockNow"); if(!el) return; const now=new Date(); el.textContent=`Agora: ${now.toLocaleDateString("pt-BR")} · ${now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`; }
+updateClock(); setInterval(updateClock,1000);
+render();
+document.querySelectorAll(".people-nav button").forEach(b=>b.classList.toggle("active",b.dataset.person===currentPerson));
+initCloudSync();
+
+</script>
+</body>
+</html>

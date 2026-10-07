@@ -1,0 +1,11 @@
+COMO VAMOS PUBLICAR
+
+1. Criar um novo Worker no Cloudflare chamado FINANCEIRO.
+2. Configurar o site como Workers Static Assets.
+3. Publicar os arquivos deste projeto.
+4. No Worker, adicionar o binding D1:
+   Variable name: FINANCEIO_DB
+   Database: financeiro
+5. Testar /state e depois abrir o site.
+
+IMPORTANTE: não apagar o Worker antigo damp-brook-a5ff nem o banco financeiro até a nova versão estar funcionando.
